@@ -37,3 +37,5 @@ x64
 *.exe
 *.out
 *.app
+/Zadanie_1/.vs
+/.vs
