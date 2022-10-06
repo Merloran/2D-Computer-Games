@@ -1,5 +1,6 @@
 # Visual Studio
 x64
+.vs
 *.sln
 *.vcxproj
 *.filters
@@ -37,5 +38,3 @@ x64
 *.exe
 *.out
 *.app
-/Zadanie_1/.vs
-/.vs
