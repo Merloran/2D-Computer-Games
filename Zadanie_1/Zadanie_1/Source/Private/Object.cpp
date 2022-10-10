@@ -18,7 +18,7 @@ void Object::UpdatePostion()
     Sprite.setPosition(Sprite.getPosition().x + Velocity.x, Sprite.getPosition().y + Velocity.y);
 }
 
-sf::Sprite Object::GetSprite()
+sf::Sprite Object::GetSprite() const
 {
     return Sprite;
 }

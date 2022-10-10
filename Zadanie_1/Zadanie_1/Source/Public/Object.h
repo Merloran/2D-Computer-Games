@@ -12,7 +12,7 @@ public:
 	/** Update position by velocity */
 	void UpdatePostion();
 
-	sf::Sprite GetSprite();
+	sf::Sprite GetSprite() const;
 
 	sf::Vector2f Velocity;
 
@@ -21,22 +21,22 @@ public:
 		Sprite.setPosition(X, Y);
 	}
 
-	__forceinline float GetX()
+	__forceinline float GetX() const
 	{
 		return Sprite.getPosition().x;
 	}
 
-	__forceinline float GetY()
+	__forceinline float GetY() const
 	{
 		return Sprite.getPosition().y;
 	}
 
-	__forceinline float GetWidth()
+	__forceinline float GetWidth() const
 	{
 		return Sprite.getGlobalBounds().width;
 	}
 
-	__forceinline float GetHeight()
+	__forceinline float GetHeight() const
 	{
 		return Sprite.getGlobalBounds().height;
 	}
