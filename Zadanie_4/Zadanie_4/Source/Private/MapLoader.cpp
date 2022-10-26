@@ -2,6 +2,7 @@
 
 MapLoader::MapLoader(const char* Path, float TileSize)
 	: TileSize(TileSize)
+	, Size(sf::Vector2f(0.0f, 0.0f))
 {
 	ifstream file;
 	string map, line;
@@ -54,6 +55,10 @@ void MapLoader::CreateObjects()
 		{
 			OffsetX = 0.0f;
 			OffsetY += TileSize;
+			if (OffsetY > Size.y)
+			{
+				Size.y = OffsetY;
+			}
 			continue;
 		}
 		
@@ -79,6 +84,10 @@ void MapLoader::CreateObjects()
 			Elements.push_back(sprite);
 		}
 		OffsetX += TileSize;
+		if (OffsetX > Size.x)
+		{
+			Size.x = OffsetX;
+		}
 	}
 }
 
