@@ -78,7 +78,7 @@ void MapLoader::CreateObjects()
 				Elements.push_back(sprite);
 				if (Tiles[j].HasCollider)
 				{
-					std::shared_ptr<Collision> C = std::make_shared<Collision>(sf::Vector2f(OffsetX + TileSize * 0.5f, OffsetY + TileSize * 0.5f),
+					std::shared_ptr<Collider> C = std::make_shared<Collider>(sf::Vector2f(OffsetX + TileSize * 0.5f, OffsetY + TileSize * 0.5f),
 						sf::Vector2f(TileSize, TileSize), &Tiles[j]);
 					Colliders.push_back(C);
 				}
@@ -125,7 +125,7 @@ void MapLoader::SpawnExit()
 			sprite.setPosition(Spawnable[random]);
 			Elements.push_back(sprite);
 			Exit = Spawnable[random];
-			std::shared_ptr<Collision> C = std::make_shared<Collision>(sf::Vector2f(Spawnable[random].x + TileSize * 0.5f, Spawnable[random].y + TileSize * 0.5f),
+			std::shared_ptr<Collider> C = std::make_shared<Collider>(sf::Vector2f(Spawnable[random].x + TileSize * 0.5f, Spawnable[random].y + TileSize * 0.5f),
 																	   sf::Vector2f(TileSize, TileSize), &Tiles[i]);
 			Colliders.push_back(C);
 			break;
@@ -139,21 +139,26 @@ void MapLoader::SpawnExit()
 	P2Start = Spawnable[random];
 }
 
-bool MapLoader::CheckColliders(Player& P)
+Tile* MapLoader::CheckColliders(Player& P)
 {
+	Tile* tile = nullptr;
+	sf::Vector2f Zero(0.0f, 0.0f);
+	sf::Vector2f Direction(0.0f, 0.0f);
+	P.isFalling = true;
 	for (int i = 0; i < Colliders.size(); ++i)
 	{
-		if ( Collision::CheckCollision(*P.getBody(), *Colliders[i]) )
+		Direction = Colliders[i]->CheckCollision(*P.getBody());
+		if (Direction != Zero)
 		{
-			Tile* t = static_cast<Tile*>(Colliders[i]->Owner);
-			if (t && t->Character == '#')
+			tile = static_cast<Tile*>(Colliders[i]->Owner);
+			float Angle = Collider::GetAngle(Direction, sf::Vector2f(1.0f, 0.0f));
+			if (Angle > 70.0f && Angle < 110.0f && Direction.y < 0.0f)
 			{
-				P.Score++;
-				return true;
+				P.isFalling = false;
 			}
 		}
 	}
-	return false;
+	return tile;
 }
 
 void MapLoader::ClearMap()

@@ -1,6 +1,6 @@
 ﻿#include <SFML/Graphics.hpp>
 #include "Source/Public/Player.h"
-#include "Source/Public/Collision.h"
+#include "Source/Public/Collider.h"
 #include "Source/Public/MapLoader.h"
 #include "Source/Public/Camera.h"
 #include <iostream>
@@ -61,10 +61,9 @@ int main()
         {sf::Vector2f(0.0f, 0.0f), sf::Color::White} 
     };
 
-    Collision C1(Levels[0].P1Start, sf::Vector2f(100.0f, 100.0f));
-    Collision C2(Levels[0].P2Start, 50.0f);
-    Player PlayerMouse = Player(C1, 1.3f, 0.98f);
-    Player PlayerKeyboard = Player(C2, 1.2f, 0.98f);
+    Collider C1(Levels[0].P1Start, sf::Vector2f(100.0f, 100.0f));
+    Collider C2(Levels[0].P2Start, 50.0f);
+    Player PlayerKeyboard = Player(C2, 1.2f, 0.89f, {400.0f, 200.0f}, 640.0f);
 
     Camera camera(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT), sf::FloatRect(0.0f, 0.0f, Levels[0].Size.x, Levels[0].Size.y));
 
@@ -85,38 +84,55 @@ int main()
                 {
                     window.close();
                 }
+                if (event.key.code == sf::Keyboard::C)
+                {
+                    PlayerKeyboard.SetJumpDistance(PlayerKeyboard.GetJumpDistance() + 10.0f);
+                }
+                else if (event.key.code == sf::Keyboard::V)
+                {
+                    PlayerKeyboard.SetJumpDistance(PlayerKeyboard.GetJumpDistance() - 10.0f);
+                }
+                if (event.key.code == sf::Keyboard::B)
+                {
+                    PlayerKeyboard.SetJumpHeight(PlayerKeyboard.GetJumpHeight() + 10.0f);
+                }
+                else if (event.key.code == sf::Keyboard::N)
+                {
+                    PlayerKeyboard.SetJumpHeight(PlayerKeyboard.GetJumpHeight() - 10.0f);
+                }
             }
 
             PlayerKeyboard.GetMovementInput(event);
-            PlayerMouse.GetMouseInput(event, camera.View, window);
         }
 
+        if (deltaTime.asMilliseconds() > 30)
+        {
+            deltaTime = sf::milliseconds(30);
+        }
+
+
         PlayerKeyboard.UpdatePosition(deltaTime.asMilliseconds());
-        PlayerMouse.UpdatePosition(deltaTime.asMilliseconds());
 
         for (int i = 0; i < LEVEL_COUNT; ++i)
         {
             if (Levels[i].IsMapLoaded)
             {
-                if (Levels[i].CheckColliders(PlayerKeyboard) || Levels[i].CheckColliders(PlayerMouse))
+                Tile* tile = Levels[i].CheckColliders(PlayerKeyboard);
+                if (tile && tile->Character == '#')
                 {
                     Current = (i + 1) % LEVEL_COUNT;
                     Levels[i].ClearMap();
                     LoadMap(Levels[Current]);
                     PlayerKeyboard.CanMove = false;
-                    PlayerMouse.CanMove = false;
                     PlayerKeyboard.getBodyShape()->setPosition(Levels[Current].P1Start);
-                    PlayerMouse.getBodyShape()->setPosition(Levels[Current].P2Start);
                     camera.SetBorder(sf::FloatRect(0.0f, 0.0f, Levels[Current].Size.x, Levels[Current].Size.y));
 
 
                     if (Current == 0)
                     {
-                        std::cout << "P1: " << PlayerKeyboard.Score << std::endl;
-                        std::cout << "P2: " << PlayerMouse.Score << std::endl;
-                        std::cout << "***" << (PlayerKeyboard.Score > PlayerMouse.Score ? "P1" : "P2") << " IS WINNER!***" << std::endl;
+                        std::cout << "SCORE!: " << PlayerKeyboard.Score << std::endl;
+                        std::cout << "***YOU WIN!***" << std::endl;
                         PlayerKeyboard.Score = 0;
-                        PlayerMouse.Score = 0;
                     }
 
                     Delay(sf::seconds(1.0f));
@@ -126,17 +142,14 @@ int main()
                 {
                     line1[0].position = PlayerKeyboard.getBodyShape()->getPosition();
                     line1[1].position = Levels[i].Exit;
-                    line2[0].position = PlayerMouse.getBodyShape()->getPosition();
-                    line2[1].position = Levels[i].Exit;
                     PlayerKeyboard.CanMove = true;
-                    PlayerMouse.CanMove = true;
                 }
                 break;
             }
         }
 
-        camera.UpdatePosition((PlayerKeyboard.getBodyShape()->getPosition() + PlayerMouse.getBodyShape()->getPosition()) * 0.5f);
-        camera.UpdateSize(PlayerKeyboard.getBodyShape()->getPosition(), PlayerMouse.getBodyShape()->getPosition(), window);
+        camera.UpdatePosition((PlayerKeyboard.getBodyShape()->getPosition() + PlayerKeyboard.getBodyShape()->getPosition()) * 0.5f);
+        camera.UpdateSize(PlayerKeyboard.getBodyShape()->getPosition(), PlayerKeyboard.getBodyShape()->getPosition(), window);
 
         for (int i = 0; i < LEVEL_COUNT; ++i)
         {
@@ -152,12 +165,10 @@ int main()
 
         // Draw objects
         window.draw(*PlayerKeyboard.getBodyShape());
-        window.draw(*PlayerMouse.getBodyShape());
 
         if (!camera.IsVisible(Levels[Current].Exit))
         {
             window.draw(line1, 2, sf::Lines);
-            window.draw(line2, 2, sf::Lines);
         }
 
         window.setView(camera.View);
